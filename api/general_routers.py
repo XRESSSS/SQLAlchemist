@@ -22,3 +22,4 @@ async def get_products():
 @router_private.get('/vip-products/')
 async def get_products_private():
     return {'products': 500000}
+

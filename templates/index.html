@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+    <ul class="list-group">
+        {% for element in my_list %}
+           <li class="list-group-item">{{ element }}</li>
+        {% endfor %}
+    </ul>
+
+    {%if user%}
+        {{ user.name }}
+        {{ user.age }}
+    {%endif %}
+
+
+{% endblock %}

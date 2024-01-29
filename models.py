@@ -40,4 +40,3 @@ class UserRefreshToken(BaseInfoMixin, Base):
     expires_at: Mapped[datetime]
 
     user = relationship('User', back_populates='tokens')
-

@@ -49,5 +49,3 @@ async def create_user_account(
 async def verify_user_account(user_uuid: str, session: AsyncSession = Depends(get_async_session)) -> dict:
     user = await dao.activate_user_account(user_uuid, session)
     return {'user_email': user.email, 'verified': True}
-
-

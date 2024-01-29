@@ -27,3 +27,4 @@ async def refresh_user_token(
 ) -> LoginResponse:
     token_pair = await AuthHandler.get_refresh_token(refresh_token, session)
     return token_pair
+
