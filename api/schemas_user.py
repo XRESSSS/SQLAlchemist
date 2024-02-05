@@ -20,4 +20,3 @@ class LoginResponse(BaseModel):
     refresh_token: str
     expires_at: int
     token_type: str = 'Bearer'
-

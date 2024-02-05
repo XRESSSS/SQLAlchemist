@@ -25,8 +25,11 @@ class User(BaseInfoMixin, Base):
     user_uuid: Mapped[uuid.UUID] = mapped_column(default=uuid.uuid4)
     is_active: Mapped[bool] = mapped_column(default=True)
     verified_at: Mapped[bool] = mapped_column(default=False)
+    is_admin: Mapped[bool] = mapped_column(default=False, nullable=True)
 
     tokens = relationship('UserRefreshToken', back_populates='user')
+    orders = relationship('Order', back_populates='user')
+
 
     def __repr__(self) -> str:
         return f'User {self.name} -> #{self.id}'
@@ -40,3 +43,42 @@ class UserRefreshToken(BaseInfoMixin, Base):
     expires_at: Mapped[datetime]
 
     user = relationship('User', back_populates='tokens')
+
+
+class Product(BaseInfoMixin, Base):
+    __tablename__ = 'products'
+
+    title: Mapped[str]
+    price: Mapped[float]
+    image_url: Mapped[str] = mapped_column(default='', nullable=True)
+    image_file: Mapped[str] = mapped_column(default='', nullable=True)
+
+    products = relationship('OrderProduct', back_populates='product')
+
+    def __str__(self):
+        return f'Product {self.title} - #{self.id}'
+
+class Order(BaseInfoMixin, Base):
+    __tablename__ = 'orders'
+
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    is_closed: Mapped[bool] = mapped_column(default=False)
+
+    user = relationship('User', back_populates='orders', lazy=False)
+
+
+class OrderProduct(BaseInfoMixin, Base):
+    __tablename__ = 'order_products'
+
+    order_id: Mapped[int] = mapped_column(ForeignKey('orders.id'))
+    product_id: Mapped[int] = mapped_column(ForeignKey('products.id'))
+    price: Mapped[float] = mapped_column(default=0.0)
+    quantity: Mapped[int] = mapped_column(default=0)
+
+    product = relationship('Product', back_populates='products')
+
+    def __str__(self):
+        return f'OrderProduct {self.product.title} - #{self.id}, {self.quantity} >> {self.price} = {self.quantity * self.price}'
+
+    __repr__ = __str__
+

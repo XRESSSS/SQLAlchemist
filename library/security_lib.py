@@ -159,4 +159,3 @@ class SecurityHandler:
         is_password_correct = await PasswordEncrypt.verify_password(password, user.hashed_password) if user else False
         return user, is_password_correct
 
-    

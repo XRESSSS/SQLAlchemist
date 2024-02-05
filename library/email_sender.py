@@ -69,3 +69,4 @@ def send_email_verification(user_email, user_uuid, user_name, host: str = "http:
         mail_body=content,
         mail_subject=f'Account verification'
     )
+

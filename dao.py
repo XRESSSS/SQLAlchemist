@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, status
 from sqlalchemy.orm import joinedload
 
-from models import User, UserRefreshToken
+from models import User, UserRefreshToken, Product, OrderProduct
 from database import async_session_maker
 from datetime import datetime
 
@@ -59,42 +59,6 @@ async def activate_user_account(user_uuid: str, session: AsyncSession) -> User |
     await session.commit()
     await session.refresh(user)
     return user
-# async def fetch_users(skip: int = 0, limit: int = 10) -> list[User]:
-#     async with async_session_maker() as session:
-#         query = select(User).offset(skip).limit(limit)
-#         result = await session.execute(query)
-#         print(query)
-#         # print(type(result.scalars().all()))
-#         print(result.scalars().all()[0].login)
-#         # print(result.scalars().all()[0].__dict__)
-#         return result.scalars().all()
-#
-#
-# async def get_user_by_id(user_id: int) -> User | None:
-#     async with async_session_maker() as session:
-#         query = select(User).filter_by(id=user_id)
-#         result = await session.execute(query)
-#         # print(result.scalar_one_or_none())
-#         return result.scalar_one_or_none()
-#
-#
-# async def update_user(user_id: int, values: dict):
-#     if not values:
-#         return
-#     async with async_session_maker() as session:
-#         query = update(User).where(User.id == user_id).values(**values)
-#         result = await session.execute(query)
-#         await session.commit()
-#         # print(tuple(result))
-#         print(query)
-#
-#
-# async def delete_user(user_id: int):
-#     async with async_session_maker() as session:
-#         query = delete(User).where(User.id == user_id)
-#         await session.execute(query)
-#         await session.commit()
-#         print(query)
 
 
 async def create_refresh_token(
@@ -123,3 +87,60 @@ async def get_refresh_token_by_key(key: str, session: AsyncSession) -> UserRefre
     )
 
     return user_token.scalar_one_or_none()
+
+
+async def add_product(
+        title: str,
+        price: float,
+        session: AsyncSession,
+        image_url: str = '',
+        image_file: str = '',
+) -> Product | None:
+    product = Product(
+        title=title,
+        price=price,
+        image_url=image_url,
+        image_file=image_file
+    )
+    session.add(product)
+    try:
+        await session.commit()
+        await session.refresh(product)
+        return product
+    except IntegrityError:
+        await session.rollback()
+        return None
+
+
+async def fetch_products(session: AsyncSession, offset=0, limit=12, q='') -> list:
+    if q:
+        query = select(Product).filter(Product.title.ilike(f'%{q}%')).offset(offset).limit(limit)
+    else:
+        query = select(Product).offset(offset).limit(limit)
+    result = await session.execute(query)
+    return result.scalars().all() or []
+
+
+async def get_product(session: AsyncSession, product_id: int) -> Product | None:
+    query = select(Product).filter(Product.id == product_id)
+    result = await session.execute(query)
+    return result.scalar_one_or_none()
+
+
+async def get_or_create(session: AsyncSession, model, only_get=False, **kwargs):
+    query = select(model).filter_by(**kwargs)
+    instance = await session.execute(query)
+    instance = instance.scalar_one_or_none()
+    if instance or only_get:
+        return instance
+    instance = model(**kwargs)
+    session.add(instance)
+    await session.commit()
+    await session.refresh(instance)
+    return instance
+
+
+async def fetch_order_products(session: AsyncSession, order_id: int) -> list:
+    query = select(OrderProduct).filter(OrderProduct.order_id == order_id).options(joinedload(OrderProduct.product))
+    result = await session.execute(query)
+    return result.scalars().all() or []
