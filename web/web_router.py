@@ -65,12 +65,9 @@ class UserCreateForm:
         return False
 
 
-
-
-
 @web_router.get('/cart')
 async def cart(request: Request, user=Depends(SecurityHandler.get_current_user_web),
-                session: AsyncSession = Depends(get_async_session)):
+               session: AsyncSession = Depends(get_async_session)):
     cart = []
     if user:
         order = await dao.get_or_create(session=session, model=Order, user_id=user.id, is_closed=False)
@@ -91,11 +88,9 @@ async def cart(request: Request, user=Depends(SecurityHandler.get_current_user_w
     return await SecurityHandler.set_cookies_web(user, response)
 
 
-
-
 @web_router.post('/close-order')
 async def close_order(request: Request, user=Depends(SecurityHandler.get_current_user_web),
-                session: AsyncSession = Depends(get_async_session)):
+                      session: AsyncSession = Depends(get_async_session)):
     if user:
         order: Order = await dao.get_or_create(session=session, model=Order, user_id=user.id, is_closed=False)
         order.is_closed = True
@@ -236,7 +231,8 @@ async def add_product(product_id: int, request: Request,
 
     if product:
         order = await dao.get_or_create(session=session, model=Order, user_id=user.id, is_closed=False)
-        order_product: OrderProduct = await dao.get_or_create(session=session, model=OrderProduct, order_id=order.id, product_id=product.id)
+        order_product: OrderProduct = await dao.get_or_create(session=session, model=OrderProduct, order_id=order.id,
+                                                              product_id=product.id)
         order_product.quantity += 1
         order_product.price = product.price
         session.add(order_product)
@@ -248,11 +244,11 @@ async def add_product(product_id: int, request: Request,
     return await SecurityHandler.set_cookies_web(user, response)
 
 
-
 @web_router.get('/')
 @web_router.get('/{query}')
 @web_router.post('/')
-async def index(request: Request, query: str = None, search: str = Form(None), user=Depends(SecurityHandler.get_current_user_web),
+async def index(request: Request, query: str = None, search: str = Form(None),
+                user=Depends(SecurityHandler.get_current_user_web),
                 session: AsyncSession = Depends(get_async_session)):
     cart = []
     if user:
@@ -265,9 +261,7 @@ async def index(request: Request, query: str = None, search: str = Form(None), u
         'user': user,
         'products': products,
         'cart': cart,
-        'brands': ['Nike', 'Adidas']
     }
 
     response = templates.TemplateResponse('index.html', context=context)
     return await SecurityHandler.set_cookies_web(user, response)
-

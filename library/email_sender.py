@@ -9,12 +9,12 @@ from settings import settings
 
 
 def send_email(
-    *,
-    recipients: list[str],
-    mail_body: str,
-    mail_subject: str,
-    attachment: str = None,
-    mime_type: str = "html",
+        *,
+        recipients: list[str],
+        mail_body: str,
+        mail_subject: str,
+        attachment: str = None,
+        mime_type: str = "html",
 ):
     SERVER = settings.SMTP_SERVER
     PASSWORD = settings.EMAIL_TOKEN
@@ -60,8 +60,8 @@ def send_email_verification(user_email, user_uuid, user_name, host: str = "http:
             Path(__file__).parent / 'email_verification.html',
             encoding='utf-8') as file:
         content = file.read()
-        content = content\
-            .replace('{{ user }}', user_name)\
+        content = content \
+            .replace('{{ user }}', user_name) \
             .replace('{{ link }}', activate_url)
 
     send_email(
@@ -69,4 +69,3 @@ def send_email_verification(user_email, user_uuid, user_name, host: str = "http:
         mail_body=content,
         mail_subject=f'Account verification'
     )
-
